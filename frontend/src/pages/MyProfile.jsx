@@ -5,11 +5,11 @@ const MyProfile = () => {
     const [userData,setUserData] = useState({
         name:"Edward Vincent",
         image:assets.profile_pic,
-        email: "ayushdev18@gmail.com",
-        phone: "+1  123 456 7890",
+        email: "ayushdev12345@gmail.com",
+        phone: "+91 9999085486",
         address:{
-            line1:"57th Cross, Richmond ",
-            line2:"Circle, Church Road, London"
+            line1:"11/378, Preet Vihar",
+            line2:"Delhi"
         },
         gender:"Male",
         dob:"2000-01-20"
