@@ -1,13 +1,21 @@
 import React, { useState } from 'react'
 import {assets} from '../assets/assets'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AppContext'
+
 const Navbar = () => {
     const navigate = useNavigate();
     const [showMenu,setShowMenu] = useState(false)
-    const [token,setToken] = useState(true)
+    const { user, logout } = useAuth()
+
+    const handleLogout = () => {
+        logout()
+        navigate('/')
+    }
+
   return (
     <div className='flex items-center justify-between text-sm py-4 mb-5 border-b border-b-gray-400'>
-      <img onClick={()=>navigate('/ ')} className='w-44 cursor-pointer' src={assets.logo} alt=''/>
+      <img onClick={()=>navigate('/')} className='w-44 cursor-pointer' src={assets.logo} alt=''/>
       <ul className='hidden md:flex items-start gap-5 font-medium'>
         <NavLink to='/'>
             <li className='py-1'>Home</li>
@@ -28,7 +36,7 @@ const Navbar = () => {
       </ul>
       <div className='flex items-center gap-4'>
       {
-        token 
+        user 
         ? <div className='flex items-center gap-2 cursor-pointer group relative'>
             <img className='w-8 rounded-full' src={assets.profile_pic} alt=''/>
             <img className='w-2.5 ' src={assets.dropdown_icon} alt=''/>
@@ -36,11 +44,11 @@ const Navbar = () => {
                 <div className='min-w-48 bg-stone-100 rounded flex flex-col gap-4 p-4'>
                     <p onClick={()=>navigate('my-profile')} className='hover:text-black cursor-pointer'>My Profile</p>
                     <p onClick={()=>navigate('my-appointments')} className='hover:text-black cursor-pointer'>My Appointments</p>
-                    <p onClick={()=>setToken(false)} className='hover:text-black cursor-pointer'>Logout</p>
+                    <p onClick={handleLogout} className='hover:text-black cursor-pointer'>Logout</p>
                 </div>
             </div>
         </div>
-        :<button onClick={()=>navigate('/login')} className='bg-primary text-white px-8 py-3 rounded-full font-light hidden md:block'>Create account</button>
+        : <button onClick={() => navigate('/login?signup=true')} className='bg-primary text-white px-8 py-3 rounded-full font-light hidden md:block'>Create account</button>
       }
       <img onClick={()=>setShowMenu(true)} className='w-6 md:hidden' src={assets.menu_icon} alt=''/>
       {/*------mobile menu------*/}
@@ -54,6 +62,17 @@ const Navbar = () => {
             <NavLink onClick={()=>setShowMenu(false)} to='/doctors'><p className='px-4 py-2 rounded inline-block'>ALL DOCTORS</p></NavLink>
             <NavLink onClick={()=>setShowMenu(false)} to='/about'><p className='px-4 py-2 rounded inline-block'>ABOUT</p></NavLink>
             <NavLink onClick={()=>setShowMenu(false)} to='/contact'><p className='px-4 py-2 rounded inline-block'>CONTACT</p></NavLink>
+            {user ? (
+              <button onClick={() => {
+                handleLogout()
+                setShowMenu(false)
+              }} className='bg-primary text-white px-8 py-3 rounded-full font-light'>Logout</button>
+            ) : (
+              <button onClick={() => {
+                navigate('/login?signup=true')
+                setShowMenu(false)
+              }} className='bg-primary text-white px-8 py-3 rounded-full font-light'>Create account</button>
+            )}
         </ul>
       </div>
       </div>
