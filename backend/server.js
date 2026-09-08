@@ -23,22 +23,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-const allowedOrigins = [
-    process.env.CLIENT_URL,
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'https://doctor-tau-rouge.vercel.app',
-    ...(process.env.CLIENT_URLS || '').split(',').map((value) => value.trim()).filter(Boolean)
-].filter(Boolean);
-
-app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
-            return callback(null, true);
-        }
-        return callback(new Error(`CORS blocked for ${origin}`));
-    }
-}));
+app.use(cors({ origin: true }));
 app.use(express.json({
     verify: (req, _res, buf) => {
         req.rawBody = buf;
