@@ -2,21 +2,27 @@ import React from 'react'
 import { assets } from '../assets/assets'
 
 const Contact = () => {
-  return (
-    <div className='flex flex-col sm:flex-row items-center gap-10 sm:gap-20 my-10'>
-      <div className='flex-1'>
-        <p className='text-3xl font-medium text-gray-900'>Get in touch</p>
-        <p className='text-gray-500 mt-3'>Have a question or just want to say hi? We'd love to hear from you.</p>
-        <div className='mt-8'>
-            <p className='text-gray-900 font-medium'>Our Office</p>
-            <p className='text-gray-500 mt-2'>11/378, Preet Vihar, Delhi</p>
-            <p className='text-gray-900 font-medium mt-8'>Contact Info</p>
-            <p className='text-gray-500 '>Tel: +91 9999085486 <br/> Email: ayushdev12345@gmail.com</p>
+    return (
+        <div className='grid md:grid-cols-2 gap-10 items-center py-8'>
+            <div>
+                <p className='text-xs uppercase tracking-[0.25em] text-primary font-semibold'>Contact</p>
+                <h1 className='font-display text-4xl mt-2'>We’re here, without the hold music.</h1>
+                <p className='text-ink/60 mt-4'>Questions about bookings, clinic onboarding, or the assignment demo — write to us.</p>
+                <div className='mt-8 bg-white rounded-2xl p-6 border border-ink/10 shadow-card space-y-4'>
+                    <div>
+                        <p className='text-xs uppercase tracking-wider text-ink/40'>Studio</p>
+                        <p>11/378, Preet Vihar, Delhi</p>
+                    </div>
+                    <div>
+                        <p className='text-xs uppercase tracking-wider text-ink/40'>Reach</p>
+                        <p>+91 99990 85486</p>
+                        <p>hello@velora.health</p>
+                    </div>
+                </div>
+            </div>
+            <img className='w-full rounded-[2rem] shadow-soft' src={assets.contact_image} alt='' />
         </div>
-      </div>
-      <img className='w-full sm:w-1/2' src={assets.contact_image} alt=''/>
-    </div>
-  )
+    )
 }
 
 export default Contact

@@ -1,22 +1,107 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-*{
-  font-family: Outfit;
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: #F5F7F6;
+  color: #12211E;
+  -webkit-font-smoothing: antialiased;
 }
 
-.active hr{
+h1, h2, .font-display {
+  font-family: Fraunces, serif;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.page-enter {
+  animation: fadeUp 0.38s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background: #101716;
+  color: #E8EEEA;
+}
+
+html.dark body,
+html.dark .min-h-screen.bg-sand {
+  background-color: #101716;
+}
+
+html.dark .bg-white,
+html.dark .bg-white\/90,
+html.dark .bg-white\/80,
+html.dark .bg-white\/95 {
+  background-color: #171f1d !important;
+}
+
+html.dark .bg-mist {
+  background-color: #1c2825 !important;
+}
+
+html.dark .bg-sand {
+  background-color: #151c1a;
+}
+
+html.dark header {
+  background-color: rgba(16, 23, 22, 0.9);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .text-ink,
+html.dark .text-ink\/70,
+html.dark .text-ink\/60 {
+  color: #E8EEEA;
+}
+
+html.dark .text-ink\/55,
+html.dark .text-ink\/50,
+html.dark .text-ink\/45 {
+  color: rgba(232, 238, 234, 0.55);
+}
+
+html.dark .border-ink\/10,
+html.dark .border-ink\/5 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .shadow-card,
+html.dark .shadow-soft {
+  box-shadow: 0 12px 40px -20px rgba(0, 0, 0, 0.55);
+}
+
+.active hr {
   @apply block
 }
 
-::-webkit-scrollbar{
-  @apply hidden
+@media (max-width:740px) {
+  .active p {
+    @apply text-white bg-primary
+  }
 }
 
-@media (max-width:740px) {
-  .active p{
-    @apply text-white bg-primary 
+@media print {
+  header, footer, .print\:hidden, .Toastify {
+    display: none !important;
+  }
+  body, html.dark body {
+    background: white !important;
+    color: #12211E !important;
+  }
+  .receipt-sheet {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
   }
 }

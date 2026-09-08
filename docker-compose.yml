@@ -1,0 +1,11 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: prescripto-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - prescripto_mongo_data:/data/db
+
+volumes:
+  prescripto_mongo_data:

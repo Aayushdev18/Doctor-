@@ -1,31 +1,46 @@
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
+import DoctorCard from './DoctorCard'
+import { DoctorCardSkeleton } from './Skeleton'
 
 const TopDoctors = () => {
     const navigate = useNavigate()
-    const {doctors} = useContext(AppContext)
-  return (
-    <div className='flex flex-col items-center gap-4 my-16 text-gray-900 md:mx-10'>
-      <h1 className='text-3xl font-medium'>Top Doctors to Book</h1>
-      <p className='sm:w-1/3 text-center text-sm'>Simply browse through our extensive list of trusted doctors.</p>
-      <div className='w-full grid grid-cols-auto gap-4 pt-5 gap-y-6 px-3 sm:px-0'>
-        {doctors.slice(0,10).map((item,index)=>(
-            <div onClick={() => navigate(`/appointment/${item._id}`)} className='border border-blue-200 rounded-xl overflow-hidden cursor-pointer hover:translate-y-[-10px] transition-all duration-500' key={index}>
-                <img className='bg-blue-50' src={item.image} alt=''/>
-                <div className='p-4'>
-                    <div className='flex items-center gap-2 text-sm text-center text-green-500'>
-                        <p className='w-2 h-2 bg-green-500 rounded-full'></p><p>Available</p>
-                    </div>
-                    <p className='text-gray-900 text-lg font-medium'>{item.name}</p>
-                    <p className='text-gray-600 text-sm'>{item.speciality}</p>
+    const { doctors, currencySymbol, doctorsLoading, doctorsError, refreshDoctors } = useContext(AppContext)
+    return (
+        <div className='py-6'>
+            <div className='flex items-end justify-between gap-4 mb-8'>
+                <div>
+                    <p className='text-xs font-semibold uppercase tracking-[0.18em] text-primary'>Clinicians</p>
+                    <h2 className='font-display text-3xl md:text-[2.5rem] mt-2'>Doctors patients book first</h2>
                 </div>
+                <button onClick={() => { navigate('/doctors'); scrollTo(0, 0) }} className='hidden sm:block text-sm font-semibold text-primary hover:text-ink'>
+                    View all
+                </button>
             </div>
-        ))}
-      </div>
-      <button onClick={()=>{navigate('/doctors');scrollTo(0,0)}} className='bg-blue-50 text-gray-600 px-12 py-3 rounded-full mt-10'>more</button>
-    </div>
-  )
+            {doctorsLoading ? (
+                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5'>
+                    {Array.from({ length: 8 }).map((_, i) => <DoctorCardSkeleton key={i} />)}
+                </div>
+            ) : doctorsError ? (
+                <div className='bg-white rounded-2xl p-8 text-center border border-ink/10'>
+                    <p className='text-ink/70 text-sm'>{doctorsError}</p>
+                    <button type='button' onClick={() => refreshDoctors()} className='mt-4 bg-ink text-white px-5 py-2.5 rounded-full text-sm font-medium'>
+                        Try again
+                    </button>
+                </div>
+            ) : (
+                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5'>
+                    {doctors.slice(0, 8).map((item) => (
+                        <DoctorCard key={item._id} doctor={item} currencySymbol={currencySymbol} />
+                    ))}
+                </div>
+            )}
+            <button onClick={() => { navigate('/doctors'); scrollTo(0, 0) }} className='sm:hidden mt-8 w-full border border-ink/10 py-3 rounded-full text-sm font-semibold bg-white'>
+                View all doctors
+            </button>
+        </div>
+    )
 }
 
 export default TopDoctors
