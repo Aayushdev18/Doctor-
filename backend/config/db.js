@@ -22,7 +22,9 @@ export const connectDB = async () => {
         console.error('Primary MongoDB connection failed:', error.message);
         if (!allowEmbedded) {
             throw new Error(
-                'Could not connect to MONGO_URI. Add a MongoDB Atlas connection string in Vercel (or backend/.env).'
+                error.message?.includes('auth') || error.message?.includes('Authentication')
+                    ? 'Atlas login failed. Reset the database user password in Database Access, put the new password in Vercel MONGO_URI, then Redeploy.'
+                    : `Could not connect to MongoDB: ${error.message}`
             );
         }
         console.log('Falling back to in-memory MongoDB...');
