@@ -22,12 +22,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+const allowedOrigins = [
+    process.env.CLIENT_URL,
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://doctor-tau-rouge.vercel.app',
+    ...(process.env.CLIENT_URLS || '').split(',').map((value) => value.trim()).filter(Boolean)
+].filter(Boolean);
+
 app.use(cors({
-    origin: [
-        process.env.CLIENT_URL || 'http://localhost:5173',
-        'http://localhost:5173',
-        'http://127.0.0.1:5173'
-    ]
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+            return callback(null, true);
+        }
+        return callback(new Error(`CORS blocked for ${origin}`));
+    }
 }));
 app.use(express.json({
     verify: (req, _res, buf) => {
@@ -80,18 +90,32 @@ app.use((err, _req, res, _next) => {
     res.status(500).json({ message: 'Server error' });
 });
 
+let boot;
+
+export const ensureReady = () => {
+    if (!boot) {
+        boot = connectDB().then(async () => {
+            const count = await Doctor.countDocuments();
+            if (count === 0) {
+                await seedCatalog();
+                console.log('Empty database — catalog seeded');
+            }
+        });
+    }
+    return boot;
+};
+
 const port = process.env.PORT || 4000;
 
-connectDB()
-    .then(async () => {
-        const count = await Doctor.countDocuments();
-        if (count === 0) {
-            await seedCatalog();
-            console.log('Empty database — catalog seeded');
-        }
-        app.listen(port, () => console.log(`API running on http://localhost:${port}`));
-    })
-    .catch((error) => {
-        console.error('Failed to connect to MongoDB:', error.message);
-        process.exit(1);
-    });
+if (!process.env.VERCEL) {
+    ensureReady()
+        .then(() => {
+            app.listen(port, () => console.log(`API running on http://localhost:${port}`));
+        })
+        .catch((error) => {
+            console.error('Failed to connect to MongoDB:', error.message);
+            process.exit(1);
+        });
+}
+
+export default app;

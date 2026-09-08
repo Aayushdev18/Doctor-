@@ -1,11 +1,11 @@
 import axios from 'axios';
 
-const explicitUrl = import.meta.env.VITE_API_URL;
-export const API_URL = explicitUrl || (import.meta.env.DEV ? '' : 'http://localhost:4000');
+const explicitUrl = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+export const API_URL = explicitUrl;
 
 const api = axios.create({
     baseURL: API_URL ? `${API_URL}/api` : '/api',
-    timeout: 8000
+    timeout: 20000
 });
 
 api.interceptors.request.use((config) => {

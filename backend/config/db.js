@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 
 let memoryServer;
 
 export const connectDB = async () => {
     const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/prescripto';
-    const allowEmbedded = process.env.ALLOW_EMBEDDED_MONGO !== 'false';
+    const onVercel = Boolean(process.env.VERCEL);
+    const allowEmbedded = !onVercel && process.env.ALLOW_EMBEDDED_MONGO !== 'false';
     const isAtlas = uri.includes('mongodb+srv://') || uri.includes('mongodb.net');
 
     try {
@@ -18,12 +18,13 @@ export const connectDB = async () => {
         console.error('Primary MongoDB connection failed:', error.message);
         if (!allowEmbedded) {
             throw new Error(
-                'Could not connect to MONGO_URI. Set a valid Atlas URI in backend/.env or set ALLOW_EMBEDDED_MONGO=true for local fallback.'
+                'Could not connect to MONGO_URI. Add a MongoDB Atlas connection string in Vercel (or backend/.env).'
             );
         }
         console.log('Falling back to in-memory MongoDB...');
     }
 
+    const { MongoMemoryServer } = await import('mongodb-memory-server');
     memoryServer = await MongoMemoryServer.create({
         instance: { dbName: 'prescripto' }
     });

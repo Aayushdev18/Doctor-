@@ -23,6 +23,23 @@ npm run dev
 
 Keep both terminals open. Open the **frontend** URL in the browser.
 
+## Deploy (Vercel)
+
+GitHub → Vercel already hosts the React app. This repo now also deploys the Express API on the **same** Vercel project (`/api` and `/static`).
+
+In the Vercel project → Settings → Environment Variables, add:
+
+```
+MONGO_URI=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/prescripto?retryWrites=true&w=majority
+JWT_SECRET=a-long-random-string
+CLIENT_URL=https://doctor-tau-rouge.vercel.app
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+ALLOW_EMBEDDED_MONGO=false
+```
+
+Create a free cluster at https://cloud.mongodb.com, whitelist `0.0.0.0/0` (Vercel has no fixed IP on hobby), then **Redeploy**. Without `MONGO_URI`, doctors will not load in production.
+
 ## Demo accounts
 
 After `npm run seed` in `backend/`:
