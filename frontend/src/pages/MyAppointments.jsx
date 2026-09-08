@@ -162,8 +162,10 @@ const MyAppointments = () => {
             <h1 className='font-display text-4xl mt-2'>My appointments</h1>
             {!payConfig.razorpayEnabled && (
                 <div className='mt-4 bg-amber-50 border border-amber-200 text-amber-900 text-sm rounded-2xl p-4'>
-                    Razorpay checkout needs test keys in <code className='font-mono'>backend/.env</code>:
-                    <span className='block mt-1'>RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET from dashboard.razorpay.com (Test mode). Then restart the API.</span>
+                    Razorpay is not configured on this server. In Vercel → doctor → Settings → Environment Variables add
+                    <span className='block mt-1 font-mono'>RAZORPAY_KEY_ID</span>
+                    <span className='block font-mono'>RAZORPAY_KEY_SECRET</span>
+                    <span className='block mt-1'>Use Test mode keys from dashboard.razorpay.com, then Redeploy. Locally those same names go in backend/.env.</span>
                     {payConfig.demoPayEnabled && <span className='block mt-1'>Demo pay is on as a fallback until keys are added.</span>}
                 </div>
             )}
