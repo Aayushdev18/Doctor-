@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { auth } from '../middleware/auth.js';
 import {
+    completeTestCheckout,
     createRazorpayOrder,
     paymentConfig,
     razorpayWebhook,
@@ -14,5 +15,6 @@ router.post('/razorpay/webhook', razorpayWebhook);
 router.use(auth);
 router.post('/razorpay/order', createRazorpayOrder);
 router.post('/razorpay/verify', verifyRazorpayPayment);
+router.post('/razorpay/test-complete', completeTestCheckout);
 
 export default router;

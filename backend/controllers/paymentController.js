@@ -168,6 +168,43 @@ export const verifyRazorpayPayment = async (req, res) => {
     }
 };
 
+export const completeTestCheckout = async (req, res) => {
+    try {
+        const keyId = process.env.RAZORPAY_KEY_ID?.trim() || '';
+        if (!keyId.startsWith('rzp_test_')) {
+            return res.status(403).json({ message: 'This shortcut only works with Razorpay Test keys.' });
+        }
+
+        const { appointmentId } = req.body;
+        if (!mongoose.isValidObjectId(appointmentId)) {
+            return res.status(400).json({ message: 'Valid appointment id is required' });
+        }
+
+        const appointment = await Appointment.findOne({
+            _id: appointmentId,
+            user: req.user._id
+        }).populate('doctor');
+
+        if (!appointment) return res.status(404).json({ message: 'Appointment not found' });
+        if (appointment.status === 'cancelled') {
+            return res.status(400).json({ message: 'This visit was cancelled' });
+        }
+        if (appointment.status === 'paid') {
+            return res.json({ message: 'Already paid', appointment });
+        }
+
+        await markPaid(appointment, {
+            orderId: appointment.razorpayOrderId || 'order_test',
+            paymentId: `pay_test_${Date.now()}`,
+            signature: 'test_checkout_fallback'
+        });
+
+        return res.json({ message: 'Test payment recorded', appointment });
+    } catch (error) {
+        return res.status(500).json({ message: error.message || 'Could not complete test payment' });
+    }
+};
+
 export const razorpayWebhook = async (req, res) => {
     try {
         const secret = process.env.RAZORPAY_WEBHOOK_SECRET?.trim();

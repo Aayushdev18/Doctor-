@@ -61,7 +61,18 @@ const MyAppointments = () => {
         })
     }, [appointments, tab])
 
-    const handlePayment = async (appointment) => {
+    const handleTestComplete = async (appointment) => {
+        setPaying(appointment._id)
+        try {
+            await api.post('/payments/razorpay/test-complete', { appointmentId: appointment._id })
+            toast.success('Test payment recorded. Opening your receipt.')
+            navigate(`/receipt/${appointment._id}?paid=1`)
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Could not record test payment')
+        } finally {
+            setPaying(false)
+        }
+    }
         setPaying(appointment._id)
         try {
             const { data } = await api.post('/payments/razorpay/order', { appointmentId: appointment._id })
@@ -253,6 +264,16 @@ const MyAppointments = () => {
                                         >
                                             <img src={assets.razorpay_logo} alt='' className='h-4 bg-white rounded px-1' />
                                             {paying === appointment._id ? 'Opening Razorpay…' : `Pay ₹${appointment.amount || doctor.fees} with Razorpay`}
+                                        </button>
+                                    )}
+                                    {appointment.status === 'pending' && payConfig.testMode && (
+                                        <button
+                                            type='button'
+                                            onClick={() => handleTestComplete(appointment)}
+                                            disabled={paying === appointment._id}
+                                            className='text-sm py-2 rounded-full border border-ink/10'
+                                        >
+                                            Continue stuck? Record Test payment
                                         </button>
                                     )}
                                     {appointment.status === 'paid' && (
