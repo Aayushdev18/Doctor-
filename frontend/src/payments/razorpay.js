@@ -42,6 +42,7 @@ export const openRazorpayCheckout = async ({ order, appointmentId, onSuccess }) 
                 emi: false,
                 paylater: false
             },
+            remember_customer: false,
             config: {
                 display: {
                     hide: [{ method: 'upi' }]

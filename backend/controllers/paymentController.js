@@ -106,7 +106,7 @@ export const createRazorpayOrder = async (req, res) => {
             doctorName: appointment.doctor?.name || 'Doctor',
             patientName: req.user.name,
             patientEmail: req.user.email,
-            patientPhone: phone.length === 10 ? phone : '9999999999'
+            patientPhone: '9999999999'
         });
     } catch (error) {
         const detail = error?.error?.description || error.message || 'Could not create payment order';

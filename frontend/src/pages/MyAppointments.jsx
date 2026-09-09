@@ -172,8 +172,9 @@ const MyAppointments = () => {
             )}
             {payConfig.razorpayEnabled && payConfig.testMode && (
                 <p className='mt-3 text-sm text-ink/60 bg-mist rounded-2xl p-3'>
-                    Test checkout: PhonePe/GPay QR does not work here (Razorpay Test Mode). Use <strong>Cards</strong> —
-                    <span className='font-mono'>4100 2800 0000 1007</span>, CVV <span className='font-mono'>123</span>, expiry <span className='font-mono'>12/26</span>.
+                    Test checkout: uncheck “Save this card”, then use Visa
+                    <span className='font-mono'>4111 1111 1111 1111</span>, any future expiry, CVV <span className='font-mono'>123</span>.
+                    The <span className='font-mono'>4100</span> card from Razorpay’s wizard often freezes on Continue.
                 </p>
             )}
             <div className='flex gap-2 mt-6'>
