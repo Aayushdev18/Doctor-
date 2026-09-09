@@ -31,13 +31,21 @@ export const openRazorpayCheckout = async ({ order, appointmentId, onSuccess }) 
             prefill: {
                 name: order.patientName,
                 email: order.patientEmail,
-                contact: order.patientPhone || '9999999999'
+                contact: order.patientPhone || '9999999999',
+                method: 'card'
             },
             method: {
                 card: true,
                 netbanking: true,
-                upi: true,
-                wallet: true
+                upi: false,
+                wallet: false,
+                emi: false,
+                paylater: false
+            },
+            config: {
+                display: {
+                    hide: [{ method: 'upi' }]
+                }
             },
             handler: async (response) => {
                 try {

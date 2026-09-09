@@ -172,7 +172,8 @@ const MyAppointments = () => {
             )}
             {payConfig.razorpayEnabled && payConfig.testMode && (
                 <p className='mt-3 text-sm text-ink/60 bg-mist rounded-2xl p-3'>
-                    Test mode: UPI and QR are visible. A real PhonePe/GPay scan usually fails here — use UPI ID <span className='font-mono'>success@razorpay</span>, or card <span className='font-mono'>4111 1111 1111 1111</span>.
+                    Test checkout: PhonePe/GPay QR does not work here (Razorpay Test Mode). Use <strong>Cards</strong> —
+                    <span className='font-mono'>4100 2800 0000 1007</span>, CVV <span className='font-mono'>123</span>, expiry <span className='font-mono'>12/26</span>.
                 </p>
             )}
             <div className='flex gap-2 mt-6'>
