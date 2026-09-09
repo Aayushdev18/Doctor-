@@ -73,6 +73,8 @@ const MyAppointments = () => {
             setPaying(false)
         }
     }
+
+    const handlePayment = async (appointment) => {
         setPaying(appointment._id)
         try {
             const { data } = await api.post('/payments/razorpay/order', { appointmentId: appointment._id })

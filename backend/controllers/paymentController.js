@@ -94,8 +94,6 @@ export const createRazorpayOrder = async (req, res) => {
         appointment.amount = amountInr;
         await appointment.save();
 
-        const phone = String(req.user.phone || '').replace(/\D/g, '').slice(-10);
-
         return res.json({
             demoMode: false,
             keyId: process.env.RAZORPAY_KEY_ID.trim(),
