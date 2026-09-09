@@ -4,6 +4,7 @@ import {
     createDoctorWithLogin,
     getAdminStats,
     listAdminAppointments,
+    listAuditLogs,
     toggleDoctorAvailability
 } from '../controllers/adminController.js';
 import { listDoctors } from '../controllers/doctorController.js';
@@ -12,6 +13,7 @@ const router = Router();
 
 router.use(auth, requireRole('admin'));
 router.get('/stats', getAdminStats);
+router.get('/audit', listAuditLogs);
 router.get('/appointments', listAdminAppointments);
 router.get('/doctors', listDoctors);
 router.post('/doctors', createDoctorWithLogin);

@@ -48,7 +48,7 @@ export default function AppContextProvider({ children }) {
             }
         }
         setDoctors([]);
-        setDoctorsError(lastError?.response?.data?.message || lastError?.message || 'Could not load doctors. Is the API running?');
+        setDoctorsError(lastError?.response?.data?.message || lastError?.message || 'The clinic list could not be loaded. Please try again.');
         setDoctorsLoading(false);
     }, []);
 

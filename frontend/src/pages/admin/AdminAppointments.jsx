@@ -2,12 +2,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import api from '../../api'
 import PanelLayout from '../../components/PanelLayout'
-
-const adminLinks = [
-    { to: '/admin', label: 'Dashboard', end: true },
-    { to: '/admin/doctors', label: 'Doctors' },
-    { to: '/admin/appointments', label: 'Appointments' }
-]
+import { adminLinks, visitStatusLabel } from '../../adminNav'
 
 const AdminAppointments = () => {
     const [appointments, setAppointments] = useState([])
@@ -38,7 +33,7 @@ const AdminAppointments = () => {
                                 <td className='p-3'>{item.doctor?.name}</td>
                                 <td className='p-3'>{new Date(item.slotDateTime).toLocaleString('en-IN')}</td>
                                 <td className='p-3'>₹{item.amount || item.doctor?.fees || 0}</td>
-                                <td className='p-3 capitalize'>{item.status}</td>
+                                <td className='p-3'>{visitStatusLabel(item.status)}</td>
                             </tr>
                         ))}
                     </tbody>

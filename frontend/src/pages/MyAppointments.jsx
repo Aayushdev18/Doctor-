@@ -8,6 +8,7 @@ import StarRating from '../components/StarRating'
 import { openRazorpayCheckout } from '../payments/razorpay'
 import EmptyState from '../components/EmptyState'
 import Portrait from '../components/Portrait'
+import { visitStatusLabel } from '../adminNav'
 
 const formatWhen = (value) => {
     const when = new Date(value)
@@ -68,7 +69,7 @@ const MyAppointments = () => {
                 order: data,
                 appointmentId: appointment._id,
                 onSuccess: async () => {
-                    toast.success('Payment confirmed. Sending you to your receipt.')
+                    toast.success('Your visit is confirmed. Opening the receipt.')
                     navigate(`/receipt/${appointment._id}?paid=1`)
                 }
             })
@@ -85,10 +86,10 @@ const MyAppointments = () => {
                 }
             }
             const message = error.response?.data?.message || error.message
-            if (message !== 'Payment cancelled') {
-                toast.error(message || 'Payment failed')
+            if (message === 'Payment cancelled') {
+                toast.info('Payment was not completed. Your slot is still reserved until you pay or cancel.')
             } else {
-                toast.info('Payment cancelled')
+                toast.error(message || 'Payment could not be completed')
             }
         } finally {
             setPaying(false)
@@ -218,7 +219,7 @@ const MyAppointments = () => {
                                             appointment.status === 'paid' ? 'bg-emerald-50 text-emerald-700' :
                                             appointment.status === 'cancelled' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'
                                         }`}>
-                                            {appointment.status}
+                                            {visitStatusLabel(appointment.status)}
                                         </span>
                                     </div>
                                     <p className='font-semibold text-xl text-ink mt-2'>{doctor.name}</p>
@@ -237,6 +238,11 @@ const MyAppointments = () => {
                                     )}
                                 </div>
                                 <div className='flex flex-col gap-2 sm:min-w-44'>
+                                    {appointment.mode === 'video' && appointment.status !== 'cancelled' && appointment.videoJoinUrl && (
+                                        <a href={appointment.videoJoinUrl} target='_blank' rel='noreferrer' className='text-sm py-2 rounded-full bg-primary text-white text-center'>
+                                            Join video consult
+                                        </a>
+                                    )}
                                     {appointment.status === 'pending' && (
                                         <button
                                             onClick={() => handlePayment(appointment)}

@@ -38,3 +38,11 @@ export const connectDB = async () => {
     await mongoose.connect(memoryServer.getUri('prescripto'));
     console.log('Embedded MongoDB connected (in-memory)');
 };
+
+export const closeDB = async () => {
+    await mongoose.disconnect();
+    if (memoryServer) {
+        await memoryServer.stop();
+        memoryServer = undefined;
+    }
+};

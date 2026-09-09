@@ -1,8 +1,10 @@
+import { isValidRazorpaySignature } from '../utils/razorpaySig.js';
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
 import mongoose from 'mongoose';
 import Appointment from '../models/Appointment.js';
 import { notify } from '../utils/notify.js';
+import { writeAudit } from '../utils/audit.js';
 
 const isPlaceholder = (value) =>
     !value ||
@@ -25,6 +27,12 @@ const markPaid = async (appointment, { orderId, paymentId, signature }) => {
     appointment.razorpayPaymentId = paymentId;
     appointment.razorpaySignature = signature || appointment.razorpaySignature;
     await appointment.save();
+    await writeAudit({
+        user: appointment.user,
+        action: 'paid',
+        entityId: appointment._id,
+        detail: `₹${appointment.amount}`
+    });
     const userId = appointment.user?._id || appointment.user;
     await notify(userId, {
         title: 'Payment received',
@@ -71,7 +79,7 @@ export const createRazorpayOrder = async (req, res) => {
             return res.status(503).json({
                 demoMode: true,
                 demoPayEnabled: demoPayEnabled(),
-                message: 'Razorpay keys are missing. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in backend/.env (test keys from dashboard.razorpay.com).'
+                message: 'Checkout is not configured on the server. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in Vercel (or backend/.env), then Redeploy.'
             });
         }
 
@@ -132,17 +140,20 @@ export const verifyRazorpayPayment = async (req, res) => {
 
         const keySecret = process.env.RAZORPAY_KEY_SECRET?.trim();
         if (isPlaceholder(keySecret)) {
-            return res.status(400).json({ message: 'Razorpay is not configured on the server' });
+            return res.status(400).json({ message: 'Checkout is not configured on the server' });
         }
 
         if (appointment.razorpayOrderId && appointment.razorpayOrderId !== razorpay_order_id) {
-            return res.status(400).json({ message: 'Order does not match this appointment' });
+            return res.status(400).json({ message: 'This payment does not match the visit' });
         }
 
-        const payload = `${razorpay_order_id}|${razorpay_payment_id}`;
-        const expected = crypto.createHmac('sha256', keySecret).update(payload).digest('hex');
-        if (expected !== razorpay_signature) {
-            return res.status(400).json({ message: 'Payment verification failed' });
+        if (!isValidRazorpaySignature({
+            orderId: razorpay_order_id,
+            paymentId: razorpay_payment_id,
+            signature: razorpay_signature,
+            secret: keySecret
+        })) {
+            return res.status(400).json({ message: 'Payment could not be verified. No charge was applied.' });
         }
 
         await markPaid(appointment, {

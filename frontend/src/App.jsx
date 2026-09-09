@@ -17,6 +17,7 @@ import AdminDoctors from './pages/admin/AdminDoctors'
 import AdminAppointments from './pages/admin/AdminAppointments'
 import DoctorDashboard from './pages/doctor/DoctorDashboard'
 import DoctorProfile from './pages/doctor/DoctorProfile'
+import AdminAudit from './pages/admin/AdminAudit'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -43,6 +44,7 @@ const App = () => {
           <Route path='/admin' element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
           <Route path='/admin/doctors' element={<ProtectedRoute roles={['admin']}><AdminDoctors /></ProtectedRoute>} />
           <Route path='/admin/appointments' element={<ProtectedRoute roles={['admin']}><AdminAppointments /></ProtectedRoute>} />
+          <Route path='/admin/activity' element={<ProtectedRoute roles={['admin']}><AdminAudit /></ProtectedRoute>} />
           <Route path='/doctor' element={<ProtectedRoute roles={['doctor']}><DoctorDashboard /></ProtectedRoute>} />
           <Route path='/doctor/profile' element={<ProtectedRoute roles={['doctor']}><DoctorProfile /></ProtectedRoute>} />
         </Routes>

@@ -1,74 +1,59 @@
 # Velora Health — Doctor Appointment Booking
 
-Full-stack app: React (Vite) frontend, Express API, MongoDB.
+Full-stack clinic product: patients book live slots, pay with Razorpay, and manage visits. Doctors run a week calendar. Admins see stats and an activity log.
 
-## Run locally
+**Live:** https://doctor-tau-rouge.vercel.app  
+**Code:** https://github.com/Aayushdev18/Doctor-
 
-**Backend** (http://localhost:4000)
+## Architecture
 
-```bash
-cd backend
-npm install
-npm run seed
-npm start
+```
+React (Vite)  ──/api──►  Express on Vercel serverless
+                         JWT roles: patient | doctor | admin
+                         MongoDB Atlas (appointments unique per doctor+slot)
+                         Razorpay order → signature verify → receipt
 ```
 
-**Frontend** (http://localhost:5173)
+Video consults open a **Jitsi** room (`meet.jit.si/VeloraHealth-{id}`) — no extra API key.
+
+## Run locally (3 minutes)
 
 ```bash
-cd frontend
-npm install
-npm run dev
+cd backend && npm install && npm run seed && npm start
+# other terminal
+cd frontend && npm install && npm run dev
 ```
 
-Keep both terminals open. Open the **frontend** URL in the browser.
+Open **http://localhost:5173** (not port 4000).
+
+| Role | Email | Password |
+|------|--------|----------|
+| Patient | patient@prescripto.com | Patient@123 |
+| Doctor | doctor@prescripto.com | Doctor@123 |
+| Admin | admin@prescripto.com | Admin@123 |
+
+Pay (Test): card `4111 1111 1111 1111`, UPI `success@razorpay`. Copy Razorpay Test keys into `backend/.env` as `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET`.
+
+```bash
+cd backend && npm test
+```
 
 ## Deploy (Vercel)
 
-GitHub → Vercel already hosts the React app. This repo now also deploys the Express API on the **same** Vercel project (`/api` and `/static`).
+Same GitHub repo builds the React app and the `/api` function.
 
-In the Vercel project → Settings → Environment Variables, add:
+**Project** → Settings → Environment Variables (Production + Preview):
 
-```
-MONGO_URI=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/prescripto?retryWrites=true&w=majority
-JWT_SECRET=a-long-random-string
-CLIENT_URL=https://doctor-tau-rouge.vercel.app
-RAZORPAY_KEY_ID=
-RAZORPAY_KEY_SECRET=
-ALLOW_EMBEDDED_MONGO=false
-```
+| Key | Example |
+|-----|---------|
+| `MONGO_URI` | `mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/prescripto?retryWrites=true&w=majority` |
+| `JWT_SECRET` | long random string |
+| `CLIENT_URL` | `https://doctor-tau-rouge.vercel.app` |
+| `RAZORPAY_KEY_ID` | `rzp_test_...` |
+| `RAZORPAY_KEY_SECRET` | Test secret |
 
-Create a free cluster at https://cloud.mongodb.com, whitelist `0.0.0.0/0` (Vercel has no fixed IP on hobby), then **Redeploy**. Without `MONGO_URI`, doctors will not load in production.
-
-## Demo accounts
-
-After `npm run seed` in `backend/`:
-
-- **Admin:** `admin@prescripto.com` / `Admin@123` → http://localhost:5173/admin
-- **Doctor:** `doctor@prescripto.com` / `Doctor@123` → http://localhost:5173/doctor
-- **Patient:** `patient@prescripto.com` / `Patient@123` → book, Razorpay pay, review after visit
-
-## Razorpay (real checkout)
-
-1. Create a free account at https://dashboard.razorpay.com
-2. Switch to **Test mode** → Account & Settings → API Keys → Generate
-3. Put them in `backend/.env`:
-
-```
-RAZORPAY_KEY_ID=rzp_test_xxxxxxxx
-RAZORPAY_KEY_SECRET=xxxxxxxx
-ALLOW_DEMO_PAY=false
-```
-
-4. Restart the API. **Pay with Razorpay** opens the official Checkout.
-5. Test card: `4111 1111 1111 1111`, any future expiry, any CVV, any 3D-secure PIN.
-
-Without keys, Pay is blocked (no fake “paid”). Set `ALLOW_DEMO_PAY=true` only if you need a shortcut.
-
-Optional webhook: `POST https://your-api/api/payments/razorpay/webhook` with event `payment.captured` and `RAZORPAY_WEBHOOK_SECRET`. Checkout still verifies on localhost without a webhook.
+Atlas → Network Access → `0.0.0.0/0`. Then **Redeploy**. Check `https://your-app.vercel.app/api/health` → `"mongo":"ok"`.
 
 ## Features
 
-- Patient: search doctors, ratings, book slots, Razorpay, cancel, review after a paid visit
-- Admin: stats, manage doctors, view appointments
-- Doctor: manage own appointments and profile
+Patients search specialists, book clinic or video slots, reschedule or cancel, pay, print a receipt, and review after the visit. Doctors add notes and mark visits done. Admins see weekly bookings and a clinic activity log. Concurrent bookings of the same slot are rejected (unique index + tests in CI).

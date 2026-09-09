@@ -2,6 +2,9 @@ import Doctor from '../models/Doctor.js';
 import User from '../models/User.js';
 import Appointment from '../models/Appointment.js';
 import { notify } from '../utils/notify.js';
+import { writeAudit } from '../utils/audit.js';
+import AuditLog from '../models/AuditLog.js';
+import { videoRoomUrl } from '../utils/video.js';
 
 const weekday = { start: '10:00', end: '17:00' };
 const defaultHours = {
@@ -23,7 +26,25 @@ export const getAdminStats = async (_req, res) => {
             Appointment.find({ status: 'paid' }).select('amount')
         ]);
         const revenue = paid.reduce((sum, item) => sum + (item.amount || 0), 0);
-        return res.json({ patients, doctors, appointments, revenue });
+        const start = new Date();
+        start.setDate(start.getDate() - 6);
+        start.setHours(0, 0, 0, 0);
+        const weekRows = await Appointment.find({ createdAt: { $gte: start } }).select('createdAt status');
+        const week = Array.from({ length: 7 }, (_, i) => {
+            const d = new Date(start);
+            d.setDate(start.getDate() + i);
+            const items = weekRows.filter((row) => new Date(row.createdAt).toDateString() === d.toDateString());
+            return {
+                label: d.toLocaleDateString('en-IN', { weekday: 'short' }),
+                bookings: items.length,
+                paid: items.filter((row) => row.status === 'paid').length
+            };
+        });
+        const noShows = await Appointment.countDocuments({
+            status: 'cancelled',
+            slotDateTime: { $lt: new Date() }
+        });
+        return res.json({ patients, doctors, appointments, revenue, week, noShows });
     } catch (error) {
         return res.status(500).json({ message: error.message || 'Could not load dashboard' });
     }
@@ -124,7 +145,12 @@ export const getDoctorAppointments = async (req, res) => {
             .populate('doctor')
             .populate('user', 'name email phone')
             .sort({ slotDateTime: -1 });
-        return res.json({ appointments });
+        return res.json({
+            appointments: appointments.map((item) => ({
+                ...item.toObject(),
+                videoJoinUrl: item.mode === 'video' ? videoRoomUrl(item._id) : ''
+            }))
+        });
     } catch (error) {
         return res.status(500).json({ message: error.message || 'Could not load appointments' });
     }
@@ -179,6 +205,12 @@ export const completeDoctorAppointment = async (req, res) => {
         appointment.status = 'paid';
         appointment.visitCompleted = true;
         await appointment.save();
+        await writeAudit({
+            user: req.user,
+            action: 'visit_completed',
+            entityId: appointment._id,
+            detail: appointment.user?.name || ''
+        });
         await notify(appointment.user._id || appointment.user, {
             title: 'Visit completed',
             body: `${appointment.doctor?.name || 'Your doctor'} marked this visit complete. You can leave a review.`,
@@ -202,6 +234,12 @@ export const addDoctorNote = async (req, res) => {
         if (notes !== undefined) appointment.notes = String(notes).slice(0, 2000);
         if (prescription !== undefined) appointment.prescription = String(prescription).slice(0, 2000);
         await appointment.save();
+        await writeAudit({
+            user: req.user,
+            action: 'notes_added',
+            entityId: appointment._id,
+            detail: appointment.user?.name || ''
+        });
         await notify(appointment.user._id || appointment.user, {
             title: 'Visit notes added',
             body: `${req.user.name} added notes to your visit.`,
@@ -210,5 +248,14 @@ export const addDoctorNote = async (req, res) => {
         return res.json({ appointment });
     } catch (error) {
         return res.status(500).json({ message: error.message || 'Could not save notes' });
+    }
+};
+
+export const listAuditLogs = async (_req, res) => {
+    try {
+        const logs = await AuditLog.find().sort({ createdAt: -1 }).limit(80);
+        return res.json({ logs });
+    } catch (error) {
+        return res.status(500).json({ message: error.message || 'Could not load activity' });
     }
 };

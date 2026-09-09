@@ -2,12 +2,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import api, { assetUrl } from '../../api'
 import PanelLayout from '../../components/PanelLayout'
-
-const adminLinks = [
-    { to: '/admin', label: 'Dashboard', end: true },
-    { to: '/admin/doctors', label: 'Doctors' },
-    { to: '/admin/appointments', label: 'Appointments' }
-]
+import { adminLinks } from '../../adminNav'
 
 const emptyForm = {
     name: '',

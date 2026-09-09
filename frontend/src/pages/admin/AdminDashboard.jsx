@@ -2,12 +2,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import api from '../../api'
 import PanelLayout from '../../components/PanelLayout'
-
-const adminLinks = [
-    { to: '/admin', label: 'Dashboard', end: true },
-    { to: '/admin/doctors', label: 'Doctors' },
-    { to: '/admin/appointments', label: 'Appointments' }
-]
+import { adminLinks } from '../../adminNav'
 
 const AdminDashboard = () => {
     const [stats, setStats] = useState(null)
@@ -35,9 +30,23 @@ const AdminDashboard = () => {
                     </div>
                 ))}
             </div>
-            <p className='text-sm text-gray-500 mt-8'>
-                Add doctors from the Doctors tab. Each doctor gets a login to manage their appointments.
+            <p className='text-sm text-ink/50 mt-8'>
+                Add doctors from the Doctors tab. Each doctor gets a login for their week calendar.
             </p>
+            {stats?.week?.length > 0 && (
+                <div className='mt-8 bg-white rounded-2xl border border-ink/10 p-5'>
+                    <p className='text-sm font-medium'>Bookings this week</p>
+                    <div className='flex items-end gap-3 h-28 mt-4'>
+                        {stats.week.map((day) => (
+                            <div key={day.label} className='flex-1 flex flex-col items-center justify-end'>
+                                <div className='w-full bg-mist rounded-t' style={{ height: `${Math.max(8, (day.bookings || 0) * 18)}px` }} />
+                                <p className='text-[10px] mt-1 text-ink/45'>{day.label}</p>
+                            </div>
+                        ))}
+                    </div>
+                    <p className='text-xs text-ink/45 mt-3'>Cancelled past visits: {stats.noShows ?? 0}</p>
+                </div>
+            )}
         </PanelLayout>
     )
 }

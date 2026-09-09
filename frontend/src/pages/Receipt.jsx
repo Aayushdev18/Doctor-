@@ -85,6 +85,11 @@ const Receipt = () => {
                     <div className='flex justify-between'><span className='text-ink/50'>Taxes</span><span>₹0</span></div>
                     <div className='flex justify-between font-semibold pt-2'><span>Total paid</span><span>₹{receipt.amount}</span></div>
                 </div>
+                {receipt.videoJoinUrl && (
+                    <a href={receipt.videoJoinUrl} target='_blank' rel='noreferrer' className='print:hidden mt-6 inline-block text-sm text-primary'>
+                        Join video consult →
+                    </a>
+                )}
                 <p className='text-xs text-ink/40 mt-8'>Issued {new Date(receipt.issuedAt).toLocaleString('en-IN')} · Computer-generated. Bring this page or a printout to reception.</p>
             </div>
         </div>

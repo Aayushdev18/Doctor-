@@ -120,11 +120,16 @@ const DoctorDashboard = () => {
                                         Notes
                                     </button>
                                 )}
-                                {item.status !== 'cancelled' && item.status !== 'paid' && (
-                                    <button onClick={() => complete(item._id)} className='bg-ink text-white px-4 py-2 rounded-full text-sm'>
-                                        Complete
-                                    </button>
-                                )}
+                                    {item.mode === 'video' && item.videoJoinUrl && (
+                                        <a href={item.videoJoinUrl} target='_blank' rel='noreferrer' className='border border-ink/10 px-4 py-2 rounded-full text-sm text-center'>
+                                            Join video
+                                        </a>
+                                    )}
+                                    {item.status === 'paid' && !item.visitCompleted && (
+                                        <button onClick={() => complete(item._id)} className='bg-ink text-white px-4 py-2 rounded-full text-sm'>
+                                            Mark visit done
+                                        </button>
+                                    )}
                             </div>
                         </div>
                         {noteId === item._id && (

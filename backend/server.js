@@ -1,8 +1,11 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 import { connectDB } from './config/db.js';
 import Doctor from './models/Doctor.js';
 import { seedCatalog } from './seed/seedDoctors.js';
@@ -23,12 +26,31 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({ origin: true }));
 app.use(express.json({
     verify: (req, _res, buf) => {
         req.rawBody = buf;
     }
 }));
+
+const skipRateLimit = process.env.NODE_ENV === 'test';
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 40,
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: () => skipRateLimit,
+    message: { message: 'Too many login attempts. Please wait a few minutes.' }
+});
+const payLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: () => skipRateLimit,
+    message: { message: 'Too many payment requests. Please wait a moment.' }
+});
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
 const apiInfo = {
@@ -59,7 +81,17 @@ const apiInfo = {
 
 app.get('/', (_req, res) => res.json(apiInfo));
 app.get('/api', (_req, res) => res.json(apiInfo));
-app.get('/api/health', (_req, res) => res.json({ ok: true }));
+app.get('/api/health', (_req, res) => {
+    const mongo = mongoose.connection.readyState === 1 ? 'ok' : 'down';
+    res.json({
+        ok: mongo === 'ok',
+        mongo,
+        hasMongoUri: Boolean(process.env.MONGO_URI || process.env.MONGODB_URI)
+    });
+});
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+app.use('/api/payments', payLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
@@ -92,7 +124,7 @@ export const ensureReady = () => {
 
 const port = process.env.PORT || 4000;
 
-if (!process.env.VERCEL) {
+if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
     ensureReady()
         .then(() => {
             app.listen(port, () => console.log(`API running on http://localhost:${port}`));

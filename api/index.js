@@ -12,10 +12,18 @@ export default async function handler(req, res) {
     const url = String(req.url || '').split('?')[0];
 
     if (url === '/api/health' || url === '/health') {
-        return json(res, 200, {
-            ok: true,
-            hasMongoUri: Boolean(process.env.MONGO_URI || process.env.MONGODB_URI)
-        });
+        try {
+            const { default: app, ensureReady } = await import('../backend/server.js');
+            await ensureReady();
+            return app(req, res);
+        } catch (error) {
+            return json(res, 200, {
+                ok: false,
+                mongo: 'down',
+                hasMongoUri: Boolean(process.env.MONGO_URI || process.env.MONGODB_URI),
+                message: error.message
+            });
+        }
     }
 
     try {

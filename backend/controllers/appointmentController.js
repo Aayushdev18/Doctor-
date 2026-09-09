@@ -3,6 +3,8 @@ import Appointment from '../models/Appointment.js';
 import Doctor from '../models/Doctor.js';
 import Review from '../models/Review.js';
 import { notify, notifyDoctorOf } from '../utils/notify.js';
+import { writeAudit } from '../utils/audit.js';
+import { videoRoomUrl } from '../utils/video.js';
 
 const formatWhen = (date) =>
     new Date(date).toLocaleString('en-IN', {
@@ -47,6 +49,12 @@ export const createAppointment = async (req, res) => {
         });
 
         const populated = await appointment.populate('doctor');
+        await writeAudit({
+            user: req.user,
+            action: 'booked',
+            entityId: appointment._id,
+            detail: `${doctor.name} · ${formatWhen(slot)} · ${visitMode}`
+        });
         await notify(req.user._id, {
             title: 'Appointment booked',
             body: `${doctor.name} · ${formatWhen(slot)} · ${visitMode === 'video' ? 'Video consult' : 'In-clinic'}`,
@@ -83,6 +91,7 @@ export const listMyAppointments = async (req, res) => {
             const upcoming = a.status !== 'cancelled' && new Date(a.slotDateTime) > now;
             return {
                 ...obj,
+                videoJoinUrl: a.mode === 'video' ? videoRoomUrl(a._id) : '',
                 review,
                 canReview: a.status === 'paid' && visitDone && !review,
                 canConfirmVisit: a.status === 'paid' && !visitDone && !review,
@@ -110,6 +119,12 @@ export const cancelAppointment = async (req, res) => {
 
         appointment.status = 'cancelled';
         await appointment.save();
+        await writeAudit({
+            user: req.user,
+            action: 'cancelled',
+            entityId: appointment._id,
+            detail: formatWhen(appointment.slotDateTime)
+        });
         await notify(req.user._id, {
             title: 'Appointment cancelled',
             body: `${appointment.doctor?.name || 'Your visit'} on ${formatWhen(appointment.slotDateTime)} was cancelled`
@@ -150,6 +165,12 @@ export const rescheduleAppointment = async (req, res) => {
 
         appointment.slotDateTime = slot;
         await appointment.save();
+        await writeAudit({
+            user: req.user,
+            action: 'rescheduled',
+            entityId: appointment._id,
+            detail: formatWhen(slot)
+        });
         await notify(req.user._id, {
             title: 'Appointment rescheduled',
             body: `${appointment.doctor?.name} is now ${formatWhen(slot)}`
@@ -189,7 +210,8 @@ export const getReceipt = async (req, res) => {
                 amount: appointment.amount,
                 mode: appointment.mode,
                 paymentProvider: appointment.paymentProvider,
-                paymentId: appointment.razorpayPaymentId || 'TEST-PAY'
+                paymentId: appointment.razorpayPaymentId || 'TEST-PAY',
+                videoJoinUrl: appointment.mode === 'video' ? videoRoomUrl(appointment._id) : ''
             }
         });
     } catch (error) {
@@ -211,6 +233,12 @@ export const completeVisit = async (req, res) => {
 
         appointment.visitCompleted = true;
         await appointment.save();
+        await writeAudit({
+            user: req.user,
+            action: 'visit_confirmed',
+            entityId: appointment._id,
+            detail: appointment.doctor?.name || ''
+        });
         return res.json({ message: 'Visit confirmed. You can leave a review.', appointment });
     } catch (error) {
         return res.status(500).json({ message: error.message || 'Could not confirm visit' });
@@ -237,6 +265,12 @@ export const payAppointment = async (req, res) => {
         appointment.status = 'paid';
         appointment.paymentProvider = 'demo';
         await appointment.save();
+        await writeAudit({
+            user: req.user,
+            action: 'paid',
+            entityId: appointment._id,
+            detail: 'demo'
+        });
         await notify(req.user._id, {
             title: 'Payment received',
             body: `₹${appointment.amount} paid for ${appointment.doctor?.name}. Receipt is ready.`,
